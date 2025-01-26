@@ -1,3 +1,11 @@
+/*
+* arger.c / String Manipulation Program
+*
+* Agnibha Chatterjee / CS5600 / Northeastern University
+* Spring 2025 / Jan 26, 2025
+*
+*/
+
 #include <stdio.h>
 
 // Custom strlen implementation

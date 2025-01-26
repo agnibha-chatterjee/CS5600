@@ -1,8 +1,8 @@
 /*
 * learnc.c / Mileage Conversion Assignment
 *
-* Paws Husky / CS5600 / Northeastern University
-* Fall 2024 / Sep 8, 2024
+* Agnibha Chatterjee / CS5600 / Northeastern University
+* Spring 2025 / Jan 26, 2025
 *
 */
 
