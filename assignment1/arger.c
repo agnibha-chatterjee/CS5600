@@ -9,8 +9,8 @@
 #include <stdio.h>
 
 // Custom strlen implementation
-size_t strlen(const char *str) {
-    size_t len = 0;
+int strlen(const char *str) {
+    int len = 0;
     while (str[len] != '\0') {
         len++;
     }
