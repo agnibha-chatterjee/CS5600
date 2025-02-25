@@ -32,18 +32,18 @@ int main(int argc, char *argv[])
         }
     };
 
-    // Handle batch mode
-    if (strcmp(option, "-b") == 0)
-    {
+    if (strcmp(argv[1], "-b") == 0) {
+        if (argc != 2) {
+            fprintf(stderr, "Usage: %s -b for batch mode\n", argv[0]);
+            return 1;
+        }
         char line[MAX_LINE_LENGTH];
         while (fgets(line, sizeof(line), stdin) != NULL)
         {
-            // Remove newline character if present
             size_t len = strlen(line);
             if (len > 0 && line[len-1] == '\n')
                 line[len-1] = '\0';
             
-            // Encode the line
             char *result = pbEncode(line, &table);
             if (result)
             {
@@ -56,43 +56,39 @@ int main(int argc, char *argv[])
             }
         }
         return 0;
-    }
-    
-    // Handle single text mode
-    if (argc != 3)
-    {
-        fprintf(stderr, "Usage: %s -e|-d \"text\" OR %s -b for batch mode\n", argv[0], argv[0]);
-        return 1;
-    }
+    } else {
+        if (argc != 3) {
+            fprintf(stderr, "Usage: %s -e|-d \"text\"\n", argv[0]);
+            return 1;
+        }
+        char *input = argv[2];
+        char *result = NULL;
+        const char *mode = NULL;
 
-    char *input = argv[2];
-    char *result = NULL;
-    const char *mode = NULL;
+        if (strcmp(option, "-e") == 0)
+        {
+            result = pbEncode(input, &table);
+            mode = "Encoded";
+        }
+        else if (strcmp(option, "-d") == 0)
+        {
+            result = pbDecode(input, &table);
+            mode = "Decoded";
+        }
+        else
+        {
+            fprintf(stderr, "Unknown option: %s\nUsage: %s -e|-d \"text\"\n", option, argv[0]);
+            return 1;
+        }
 
-    // Determine mode and perform the operation
-    if (strcmp(option, "-e") == 0)
-    {
-        result = pbEncode(input, &table);
-        mode = "Encoded";
-    }
-    else if (strcmp(option, "-d") == 0)
-    {
-        result = pbDecode(input, &table);
-        mode = "Decoded";
-    }
-    else
-    {
-        fprintf(stderr, "Unknown option: %s\nUsage: %s -e|-d \"text\"\n", option, argv[0]);
-        return 1;
-    }
+        if (result == NULL)
+        {
+            fprintf(stderr, "Error processing input.\n");
+            return 1;
+        }
 
-    if (result == NULL)
-    {
-        fprintf(stderr, "Error processing input.\n");
-        return 1;
+        printf("%s message: %s\n", mode, result);
+        free(result);
+        return 0;
     }
-
-    printf("%s message: %s\n", mode, result);
-    free(result);
-    return 0;
 }
