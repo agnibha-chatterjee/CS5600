@@ -11,8 +11,9 @@
 
 char *pbEncode(const char *plaintext, const polybius_table_t *table)
 {
-    if (plaintext == NULL || table == NULL)
+    if (plaintext == NULL || table == NULL) {
         return NULL;
+    }
 
     int len = (int)strlen(plaintext);
    
@@ -27,8 +28,9 @@ char *pbEncode(const char *plaintext, const polybius_table_t *table)
         if (isalpha(ch))
         {
             ch = toupper(ch);
-            if (ch == 'J')
+            if (ch == 'J') {
                 ch = 'I';
+            }
             int found = 0;
             for (int row = 0; row < POLYBIUS_SIZE && !found; row++)
             {
@@ -58,13 +60,15 @@ char *pbEncode(const char *plaintext, const polybius_table_t *table)
 
 char *pbDecode(const char *ciphertext, const polybius_table_t *table)
 {
-    if (ciphertext == NULL || table == NULL)
+    if (ciphertext == NULL || table == NULL) {
         return NULL;
+    }
 
     int len = (int)strlen(ciphertext);
     char *decoded = malloc(len + 1);
-    if (!decoded)
+    if (!decoded) {
         return NULL;
+    }
 
     int pos = 0;
     for (int i = 0; i < len; i++)

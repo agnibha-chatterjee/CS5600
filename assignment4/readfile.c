@@ -28,8 +28,9 @@ queue_t *read_file_to_queue(const char *filename) {
     char buffer[MAX_LINE_LENGTH];
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
          size_t len = strlen(buffer);
-         if (len > 0 && buffer[len-1] == '\n')
+         if (len > 0 && buffer[len-1] == '\n') {
               buffer[len-1] = '\0';
+         }
 
          char *line = strdup(buffer);
          if (!line) {

@@ -19,8 +19,9 @@ queue_t* create_queue() {
 }
 
 void push_queue(queue_t* queue, void* element) {
-    if (queue == NULL)
+    if (queue == NULL) {
         return;
+    }
     queue_node_t* node = (queue_node_t*) malloc(sizeof(queue_node_t));
     if (node == NULL) {
          fprintf(stderr, "Memory allocation error in push_queue.\n");
@@ -30,29 +31,34 @@ void push_queue(queue_t* queue, void* element) {
     node->next = NULL;
     node->prev = queue->tail;
     
-    if(queue->tail != NULL)
+    if(queue->tail != NULL) {
          queue->tail->next = node;
+    }
     
     queue->tail = node;
     
-    if(queue->head == NULL)
+    if(queue->head == NULL) {
          queue->head = node;
+    }
     
     queue->size++;
 }
 
 void* pop_queue(queue_t* queue) {
-    if(queue == NULL || queue->head == NULL)
+    if(queue == NULL || queue->head == NULL) {
         return NULL;
+    }
     
     queue_node_t* node = queue->head;
     void* data = node->data;
     
     queue->head = node->next;
-    if(queue->head != NULL)
+    if(queue->head != NULL) {
          queue->head->prev = NULL;
-    else
+    }
+    else {
          queue->tail = NULL; 
+    }
     
     queue->size--;
     free(node);
@@ -75,15 +81,19 @@ process_t* remove_process(queue_t* queue) {
          current = current->next;
     }
     
-    if(highest_node->prev != NULL)
+    if(highest_node->prev != NULL) {
          highest_node->prev->next = highest_node->next;
-    else // Removing head
+    }
+    else {
          queue->head = highest_node->next;
+    }
     
-    if(highest_node->next != NULL)
+    if(highest_node->next != NULL) {
          highest_node->next->prev = highest_node->prev;
-    else // Removing tail
+    }
+    else {
          queue->tail = highest_node->prev;
+    }
     
     process_t* data = (process_t*) highest_node->data;
     free(highest_node);
@@ -93,7 +103,8 @@ process_t* remove_process(queue_t* queue) {
 }
 
 int get_queue_size(queue_t* queue) {
-    if(queue == NULL)
+    if(queue == NULL) {
          return 0;
+    }
     return queue->size;
 } 
