@@ -7,7 +7,6 @@
 #include "queue.h"
 #include <stdio.h>
 
-// This function creates a new queue
 queue_t* create_queue() {
     queue_t* queue = (queue_t*) malloc(sizeof(queue_t));
     if (!queue) {
@@ -19,8 +18,6 @@ queue_t* create_queue() {
     return queue;
 }
 
-// This function creates a new node containing the given element,
-// and appends it to the end of the queue.
 void push_queue(queue_t* queue, void* element) {
     if (queue == NULL)
         return;
@@ -44,8 +41,6 @@ void push_queue(queue_t* queue, void* element) {
     queue->size++;
 }
 
-// This function removes the node from the front of the queue,
-// returns the stored data pointer.
 void* pop_queue(queue_t* queue) {
     if(queue == NULL || queue->head == NULL)
         return NULL;
@@ -57,16 +52,13 @@ void* pop_queue(queue_t* queue) {
     if(queue->head != NULL)
          queue->head->prev = NULL;
     else
-         queue->tail = NULL; // Queue becomes empty
+         queue->tail = NULL; 
     
     queue->size--;
     free(node);
     return data;
 }
 
-// This function traverses the queue to find the process_t with the
-// highest priority (higher the number, higher the priority), removes that node from the queue,
-// and returns the process_t pointer contained in it.
 process_t* remove_process(queue_t* queue) {
     if(queue == NULL || queue->head == NULL)
          return NULL;
@@ -83,7 +75,6 @@ process_t* remove_process(queue_t* queue) {
          current = current->next;
     }
     
-    // Remove highest_node from the doubly linked list
     if(highest_node->prev != NULL)
          highest_node->prev->next = highest_node->next;
     else // Removing head
@@ -101,7 +92,6 @@ process_t* remove_process(queue_t* queue) {
     return data;
 }
 
-// This function returns the current number of elements in the queue.
 int get_queue_size(queue_t* queue) {
     if(queue == NULL)
          return 0;
