@@ -18,10 +18,8 @@ void *worker(void *data)
     
     if(strcmp(name, "X") == 0)
     {
-        int old_state;
-        
         for (int j = 0; j < 10; j++) {
-            global_array[j] = (j + 1) * 100;
+            global_array[j] = (j + 1) * 20;
         }
         printf("Thread %s wrote global data.\n", name);
         
@@ -29,8 +27,6 @@ void *worker(void *data)
     else if(strcmp(name, "Y") == 0)
     {
         sleep(1);
-        
-        int old_state;
         
         printf("Thread %s reading global array: ", name);
         for (int j = 0; j < 10; j++) {
@@ -56,6 +52,9 @@ int main(void)
     
     pthread_create(&th1, NULL, worker, "X");
     pthread_create(&th2, NULL, worker, "Y");
+
+    printf("Thread X adds values to global array\n");
+    printf("Thread Y reads global array\n");
 
     sleep(2);
     
