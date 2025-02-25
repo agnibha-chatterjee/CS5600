@@ -18,9 +18,6 @@ readfile.o: readfile.c readfile.h queue.h
 queue.o: queue.c queue.h
 	$(CC) $(CFLAGS) -c queue.c -o queue.o
 
-readfile_demo:
-	$(CC) $(CFLAGS) -DDEMO_READFILE_MAIN readfile.c queue.o -o readfile_demo
-
 genrand: genrand.o
 	$(CC) -o genrand genrand.o
 

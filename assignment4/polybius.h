@@ -42,4 +42,4 @@ char *pbEncode(const char *plaintext, const polybius_table_t *table);
  */
 char *pbDecode(const char *ciphertext, const polybius_table_t *table);
 
-#endif /* POLYBIUS_H */
+#endif
