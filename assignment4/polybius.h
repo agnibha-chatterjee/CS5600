@@ -7,8 +7,6 @@
 #ifndef POLYBIUS_H
 #define POLYBIUS_H
 
-#include <stddef.h>
-
 #define POLYBIUS_SIZE 5
 
 typedef struct
