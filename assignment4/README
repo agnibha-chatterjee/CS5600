@@ -1,0 +1,11 @@
+Steps to run:
+1. Run make
+2. Run ./genrand <number_of_strings> <filename> [-a] - same as the previous submission, in case no_of_strings is less than 10000, it will be set to 10000, the -a option appends the strings to the file, otherwise it overwrites the file
+3. Run ./encrypt <filename> - encrypts the file in batches of 100 lines each, and writes the encrypted lines to the output directory
+
+Verification:
+1. Inspect the output directory for the encrypted files, there should be 100 files, each containing 100 encrypted lines if the input file has 10000 lines
+
+
+
+
