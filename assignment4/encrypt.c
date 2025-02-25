@@ -140,6 +140,6 @@ int main(int argc, char *argv[]) {
     }
 
     free(sentenceQueue);
-    printf("Batch encryption complete. Encrypted files are in the 'output' directory.\n");
+    printf("Encryption is complete. Encrypted files are in the 'output' directory.\n");
     return 0;
 } 
