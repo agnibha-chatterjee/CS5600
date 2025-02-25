@@ -86,6 +86,10 @@ int main(int argc, char *argv[]) {
               char out_filename[256];
               snprintf(out_filename, sizeof(out_filename), "output/encrypted_batch_%d.txt", batch_number);
 
+              printf("Encrypting batch %d\n", batch_number);
+              // O_WRONLY: Write only
+              // O_CREAT: Create the file if it doesn't exist
+              // O_TRUNC: Truncate the file to zero length if it already exists
               int out_fd = open(out_filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
               if (out_fd == -1) {
                    perror("open output file");
