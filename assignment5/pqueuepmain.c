@@ -2,14 +2,6 @@
  * pqueuepmain.c / Complex Synchronization
  * Agnibha Chatterjee / CS5600 / Northeastern University
  * Spring 2025 / Feb 24, 2025
- *
- * Modifications:
- * - Increased buffer capacity from 10 to 15
- * - Created at least 2 producer threads and 2 consumer threads
- * - Added counters to track the total items produced and consumed
- * - Added exit conditions: once 30 items have been produced or consumed,
- *   print a message and exit the corresponding threads
- * - Inserted extra debug print messages for clarity
  */
 
 #include <stdio.h>
@@ -17,7 +9,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define BUF_SIZE 15   // Modified: Bumped up buffer capacity to 15
+#define BUF_SIZE 15   // Bumped up buffer capacity to 15
 
 int buffer[BUF_SIZE];
 int num = 0;
@@ -78,7 +70,7 @@ void *producer(void *param) {
     while (1) {
         pthread_mutex_lock(&mut);
 
-        // Exit condition: if 30 items have been produced, exit producer thread
+        // If 30 items have been produced, exit producer thread
         if (produced_total >= 30) {
             if (!done_producing) {
                 printf("30 items produced, exiting producers\n");
@@ -125,7 +117,7 @@ void *consumer(void *param) {
     while (1) {
         pthread_mutex_lock(&mut);
 
-        // Exit condition: if 30 items have been consumed, exit consumer thread
+        // If 30 items have been consumed, exit consumer thread
         if (consumed_total >= 30) {
             if (!done_consuming) {
                 printf("30 items consumed, exiting consumers\n");
