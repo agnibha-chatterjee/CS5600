@@ -11,11 +11,7 @@
 static void ensure_directory_exists() {
     struct stat st = {0};
     if (stat(MESSAGE_DIR, &st) == -1) {
-        #ifdef _WIN32
-            mkdir(MESSAGE_DIR);
-        #else
-            mkdir(MESSAGE_DIR, 0700);
-        #endif
+        mkdir(MESSAGE_DIR, 0700);
     }
 }
 
