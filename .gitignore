@@ -3,6 +3,8 @@
 # Prerequisites
 *.d
 
+*.dat
+
 # Object files
 *.o
 *.ko

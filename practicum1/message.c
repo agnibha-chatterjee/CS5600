@@ -15,14 +15,52 @@ static void ensure_directory_exists() {
     }
 }
 
+// Helper function to generate a UUID version 4.
+// The UUID format is "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx", where x is any hexadecimal digit and
+// y is one of 8, 9, a, or b.
+void generate_uuid(char *uuid_buf) {
+    const char *hex_digits = "0123456789abcdef";
+    int i;
+    for (i = 0; i < 36; i++) {
+        switch (i) {
+            case 8:
+            case 13:
+            case 18:
+            case 23:
+                uuid_buf[i] = '-';
+                break;
+            case 14:
+                uuid_buf[i] = '4';  // UUID version 4
+                break;
+            case 19: {
+                int r = rand() % 16;
+                r = (r & 0x3) | 0x8; // Set the variant bits: 10xx
+                uuid_buf[i] = hex_digits[r];
+                break;
+            }
+            default:
+                uuid_buf[i] = hex_digits[rand() % 16];
+                break;
+        }
+    }
+    uuid_buf[36] = '\0';
+}
+
 // Creates a new message with the specified fields.
-Message* create_msg(int id, const char* sender, const char* receiver, const char* content) {
+Message* create_msg(const char* id, const char* sender, const char* receiver, const char* content) {
     Message* msg = (Message*)malloc(sizeof(Message));
     if (!msg)
         return NULL;
 
-    msg->id = id;
-    msg->time_sent = time(NULL);
+    // Copy the UUID string into the message id field.
+    strncpy(msg->id, id, 36);
+    msg->id[36] = '\0';
+
+    // Set the current time as a human-readable string
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    strftime(msg->time_sent, sizeof(msg->time_sent), "%Y-%m-%d %H:%M:%S", tm_info);
+
     strncpy(msg->sender, sender, MAX_LEN - 1);
     msg->sender[MAX_LEN - 1] = '\0';
     strncpy(msg->receiver, receiver, MAX_LEN - 1);
@@ -33,7 +71,7 @@ Message* create_msg(int id, const char* sender, const char* receiver, const char
     return msg;
 }
 
-// Stores the message on disk by writing it to a binary file named "msg_<id>.dat"
+// Stores the message on disk by writing it to a binary file named "msg_<uuid>.dat"
 // in the message store directory. Returns 0 on success.
 int store_msg(Message* msg) {
     if (!msg)
@@ -42,7 +80,7 @@ int store_msg(Message* msg) {
     ensure_directory_exists();
 
     char filepath[256];
-    snprintf(filepath, sizeof(filepath), MESSAGE_DIR "/msg_%d.dat", msg->id);
+    snprintf(filepath, sizeof(filepath), MESSAGE_DIR "/msg_%s.dat", msg->id);
 
     FILE* fp = fopen(filepath, "wb");
     if (!fp) {
@@ -56,10 +94,11 @@ int store_msg(Message* msg) {
     return write_count == 1 ? 0 : -1;
 }
 
-// Retrieves the message with the given id from disk. Returns NULL if not found.
-Message* retrieve_msg(int id) {
+// Retrieves the message with the given UUID from disk.
+// Returns a dynamically allocated Message* or NULL if not found.
+Message* retrieve_msg(const char* id) {
     char filepath[256];
-    snprintf(filepath, sizeof(filepath), MESSAGE_DIR "/msg_%d.dat", id);
+    snprintf(filepath, sizeof(filepath), MESSAGE_DIR "/msg_%s.dat", id);
 
     FILE* fp = fopen(filepath, "rb");
     if (!fp) {
