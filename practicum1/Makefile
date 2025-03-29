@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -std=c99 -g
 TARGET = app
 
 # Source files and corresponding objects
-SRCS = main.c message.c
+SRCS = main.c message.c cache.c
 OBJS = $(SRCS:.c=.o)
 
 .PHONY: all clean

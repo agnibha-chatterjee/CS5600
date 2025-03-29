@@ -1,4 +1,5 @@
 #include "message.h"
+#include "cache.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,10 +74,15 @@ Message* create_msg(const char* id, const char* sender, const char* receiver, co
 
 // Stores the message on disk by writing it to a binary file named "msg_<uuid>.dat"
 // in the message store directory. Returns 0 on success.
+// Now also stores the message in cache
 int store_msg(Message* msg) {
     if (!msg)
         return -1;
 
+    // Add to cache first
+    cache_insert(msg);
+
+    // Then write to disk
     ensure_directory_exists();
 
     char filepath[256];
@@ -95,8 +101,21 @@ int store_msg(Message* msg) {
 }
 
 // Retrieves the message with the given UUID from disk.
+// First checks cache, then falls back to disk if not found.
 // Returns a dynamically allocated Message* or NULL if not found.
 Message* retrieve_msg(const char* id) {
+    // First check if the message is in the cache
+    Message* cached_msg = cache_lookup(id);
+    if (cached_msg) {
+        // Message found in cache, clone it and return
+        Message* result = (Message*)malloc(sizeof(Message));
+        if (!result) return NULL;
+        
+        memcpy(result, cached_msg, sizeof(Message));
+        return result;
+    }
+    
+    // Message not in cache, load from disk
     char filepath[256];
     snprintf(filepath, sizeof(filepath), MESSAGE_DIR "/msg_%s.dat", id);
 
@@ -120,5 +139,9 @@ Message* retrieve_msg(const char* id) {
         perror("Failed to read message from file");
         return NULL;
     }
+    
+    // Add the loaded message to the cache
+    cache_insert(msg);
+    
     return msg;
 }

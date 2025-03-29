@@ -139,6 +139,25 @@ int main(int argc, char *argv[]) {
             print_usage();
             return 1;
         }
+    } else if (strcmp(argv[1], "simulate") == 0) {
+        char uuid1[37];
+        char uuid2[37];
+        char uuid3[37];
+        generate_uuid(uuid1);
+        generate_uuid(uuid2);
+        generate_uuid(uuid3);
+
+        Message* msg1 = create_msg(uuid1, "sender1", "receiver1", "content1");
+        Message* msg2 = create_msg(uuid2, "sender2", "receiver2", "content2");
+        Message* msg3 = create_msg(uuid3, "sender3", "receiver3", "content3");
+    
+        store_msg(msg1);
+        store_msg(msg2);
+        store_msg(msg3);
+
+        free(msg1);
+        free(msg2);
+        free(msg3);
     } else {
         fprintf(stderr, "Unrecognized command: %s\n", argv[1]);
         print_usage();
