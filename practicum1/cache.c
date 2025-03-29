@@ -137,7 +137,6 @@ void cache_insert(const Message* msg) {
     
     // If no empty slot, use the selected replacement strategy
     if (slot_index == -1) {
-        // Use the current strategy to find a slot to replace
         switch (current_strategy) {
             case REPLACEMENT_LRU:
                 slot_index = find_lru_slot();
