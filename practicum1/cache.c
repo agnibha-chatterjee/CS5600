@@ -1,12 +1,14 @@
 #include "cache.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Global cache variables
 static CacheEntry cache[CACHE_SIZE];
 static int cache_initialized = 0;
 static int cache_hits = 0;
 static int cache_misses = 0;
+static CacheReplacementStrategy current_strategy = REPLACEMENT_LRU; // Default to LRU
 
 // Initialize the cache
 void init_cache() {
@@ -18,7 +20,26 @@ void init_cache() {
         cache_initialized = 1;
         cache_hits = 0;
         cache_misses = 0;
-        printf("[CACHE] Initialized with %d slots\n", CACHE_SIZE);
+        printf("[CACHE] Initialized with %d slots using %s replacement\n", 
+               CACHE_SIZE, get_cache_strategy_name());
+    }
+}
+
+// Set the cache replacement strategy
+void set_cache_strategy(CacheReplacementStrategy strategy) {
+    current_strategy = strategy;
+    printf("[CACHE] Replacement strategy set to: %s\n", get_cache_strategy_name());
+}
+
+// Get a string representation of the current replacement strategy
+const char* get_cache_strategy_name() {
+    switch (current_strategy) {
+        case REPLACEMENT_LRU:
+            return "LRU";
+        case REPLACEMENT_RANDOM:
+            return "Random";
+        default:
+            return "Unknown";
     }
 }
 
@@ -62,8 +83,38 @@ Message* cache_lookup(const char* id) {
     return NULL;
 }
 
+// Find an empty slot or return -1 if cache is full
+static int find_empty_slot() {
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (!cache[i].valid) {
+            return i;
+        }
+    }
+    return -1; // No empty slots
+}
+
+// Find the least recently used slot
+static int find_lru_slot() {
+    int lru_index = 0;
+    time_t lru_time = cache[0].last_accessed;
+    
+    for (int i = 1; i < CACHE_SIZE; i++) {
+        if (cache[i].last_accessed < lru_time) {
+            lru_time = cache[i].last_accessed;
+            lru_index = i;
+        }
+    }
+    
+    return lru_index;
+}
+
+// Find a random slot
+static int find_random_slot() {
+    return rand() % CACHE_SIZE;
+}
+
 // Add a message to the cache
-// If cache is full, replace the least recently used entry
+// If cache is full, replace an entry based on the current replacement strategy
 void cache_insert(const Message* msg) {
     if (!cache_initialized) init_cache();
     if (!msg) return;
@@ -81,33 +132,39 @@ void cache_insert(const Message* msg) {
         }
     }
     
-    // Find an empty slot or the least recently used slot
-    int lru_index = 0;
-    time_t lru_time = time(NULL);
+    // Find an empty slot if available
+    int slot_index = find_empty_slot();
     
-    for (int i = 0; i < CACHE_SIZE; i++) {
-        if (!cache[i].valid) {
-            // Found an empty slot
-            lru_index = i;
-            printf("[CACHE] Found empty slot at index %d\n", i);
-            break;
+    // If no empty slot, use the selected replacement strategy
+    if (slot_index == -1) {
+        // Use the current strategy to find a slot to replace
+        switch (current_strategy) {
+            case REPLACEMENT_LRU:
+                slot_index = find_lru_slot();
+                printf("[CACHE] Using LRU replacement strategy\n");
+                break;
+                
+            case REPLACEMENT_RANDOM:
+                slot_index = find_random_slot();
+                printf("[CACHE] Using Random replacement strategy\n");
+                break;
+                
+            default:
+                // Fallback to LRU if unknown strategy
+                slot_index = find_lru_slot();
+                printf("[CACHE] Using LRU replacement strategy (fallback)\n");
+                break;
         }
         
-        if (cache[i].last_accessed < lru_time) {
-            // Found a less recently used entry
-            lru_time = cache[i].last_accessed;
-            lru_index = i;
-        }
-    }
-    
-    if (cache[lru_index].valid) {
-        printf("[CACHE] Replacing LRU entry in slot %d (ID: %s)\n", 
-               lru_index, cache[lru_index].msg.id);
+        printf("[CACHE] Replacing entry in slot %d (ID: %s)\n", 
+               slot_index, cache[slot_index].msg.id);
+    } else {
+        printf("[CACHE] Found empty slot at index %d\n", slot_index);
     }
     
     // Insert the message into the chosen slot
-    memcpy(&cache[lru_index].msg, msg, sizeof(Message));
-    cache[lru_index].valid = 1;
-    cache[lru_index].last_accessed = time(NULL);
-    printf("[CACHE] Message inserted in slot %d\n", lru_index);
+    memcpy(&cache[slot_index].msg, msg, sizeof(Message));
+    cache[slot_index].valid = 1;
+    cache[slot_index].last_accessed = time(NULL);
+    printf("[CACHE] Message inserted in slot %d\n", slot_index);
 } 

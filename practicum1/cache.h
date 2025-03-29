@@ -7,6 +7,12 @@
 // Cache configuration
 #define CACHE_SIZE 2       // Number of messages in cache
 
+// Cache replacement strategies
+typedef enum {
+    REPLACEMENT_LRU,     // Least Recently Used replacement
+    REPLACEMENT_RANDOM   // Random replacement
+} CacheReplacementStrategy;
+
 // Cache entry structure
 typedef struct CacheEntry {
     Message msg;           // The cached message
@@ -17,6 +23,9 @@ typedef struct CacheEntry {
 // Initialize the message cache
 void init_cache();
 
+// Set the cache replacement strategy
+void set_cache_strategy(CacheReplacementStrategy strategy);
+
 // Clear the cache (mark all entries as invalid)
 void clear_cache();
 
@@ -25,10 +34,13 @@ void clear_cache();
 Message* cache_lookup(const char* id);
 
 // Add a message to the cache
-// If cache is full, replace the least recently used entry
+// If cache is full, replace an entry based on the current replacement strategy
 void cache_insert(const Message* msg);
 
 // Get cache statistics (hits, misses)
 void get_cache_stats(int* hits, int* misses);
+
+// Get a string representation of the current replacement strategy
+const char* get_cache_strategy_name();
 
 #endif // CACHE_H 

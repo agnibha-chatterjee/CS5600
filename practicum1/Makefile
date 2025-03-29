@@ -16,7 +16,13 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-%.o: %.c message.h
+main.o: main.c message.h cache.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+message.o: message.c message.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+cache.o: cache.c cache.h message.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
