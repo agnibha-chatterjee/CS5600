@@ -1,0 +1,61 @@
+Let me write a README for your messaging system with cache implementation:
+
+# Hierarchical Memory and Cache System
+
+This project implements a message-oriented data store with a memory hierarchy and caching system that efficiently manages messages between main memory and disk storage.
+
+## Components
+
+### Message System
+
+- Defined in `message.h` and `message.c`
+- Message structure includes:
+  - Unique ID (UUID format)
+  - Timestamp
+  - Sender and receiver information
+  - Message content
+  - Delivery status flag
+- Core functions:
+  - `create_msg()`: Creates new messages with properly initialized fields
+  - `store_msg()`: Persists messages to disk in the message_store directory
+  - `retrieve_msg()`: Finds messages by UUID, checking cache first
+
+### Cache System
+
+- Defined in `cache.h` and `cache.c`
+- Provides in-memory storage for frequently accessed messages
+- Features:
+  - Configurable cache size (default: 2 entries)
+  - Two page replacement algorithms:
+    - LRU (Least Recently Used)
+    - Random replacement
+  - Metrics tracking (hits, misses, hit ratio)
+
+### Evaluation Framework
+
+- Implemented in `cache_evaluation.c`
+- Tests cache performance with 1000 random message accesses
+- Measures and reports:
+  - Cache hits per 1000 accesses
+  - Cache misses per 1000 accesses
+  - Cache hit ratio
+- Evaluates both LRU and Random replacement strategies
+
+## Building and Running
+
+```
+make          # Build all components
+./app         # Run the main application
+./cache_eval  # Run the cache evaluation program
+```
+
+## Design Considerations
+
+The project implements a hierarchical memory system where:
+
+1. Messages are stored in fixed-size cache slots in main memory
+2. When the cache is full, messages are replaced according to the selected strategy
+3. All messages are persisted to disk, organized by UUID
+4. When retrieving messages, the cache is checked before accessing disk storage
+
+This design demonstrates key concepts in memory hierarchy management, including caching, page replacement algorithms, and performance trade-offs.

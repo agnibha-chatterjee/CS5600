@@ -5,7 +5,7 @@
 #include <time.h>
 
 // Cache configuration
-#define CACHE_SIZE 2       // Number of messages in cache
+#define CACHE_SIZE 4       // Number of messages in cache
 
 // Cache replacement strategies
 typedef enum {

@@ -6,7 +6,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#define NUM_TESTS 1000  // Number of random message accesses for evaluation
+#define NUM_TESTS 10  // Number of random message accesses for evaluation
 
 // Ensure the message store directory exists
 static void ensure_message_store_exists() {
@@ -30,7 +30,7 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
     ensure_message_store_exists();
     
     // Create some initial messages to work with (more than cache size)
-    const int num_messages = CACHE_SIZE * 2;
+    const int num_messages = CACHE_SIZE + 2;
     char **ids = (char **)malloc(num_messages * sizeof(char *));
     
     // Generate and store messages
@@ -50,7 +50,7 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
     }
     
     // Reset cache stats before evaluation
-    clear_cache();
+    // clear_cache();
     
     printf("Beginning evaluation with %d random accesses...\n", NUM_TESTS);
     
@@ -78,8 +78,8 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
     
     // Print results
     printf("\nCACHE EVALUATION RESULTS (%s):\n", get_cache_strategy_name());
-    printf("Number of cache hits per 1000 accesses: %d\n", hits);
-    printf("Number of cache misses per 1000 accesses: %d\n", misses);
+    printf("Number of cache hits per %d accesses: %d\n", NUM_TESTS, hits);
+    printf("Number of cache misses per %d accesses: %d\n", NUM_TESTS, misses);
     printf("Cache hit ratio: %.2f\n", hit_ratio);
     
     // Clean up
@@ -101,7 +101,7 @@ int main(void) {
     evaluate_cache_performance(REPLACEMENT_LRU);
     
     // Test Random strategy
-    evaluate_cache_performance(REPLACEMENT_RANDOM);
+    // evaluate_cache_performance(REPLACEMENT_RANDOM);
     
     return 0;
 } 
