@@ -103,15 +103,20 @@ int store_msg(Message* msg) {
 // Retrieves the message with the given UUID from disk.
 // First checks cache, then falls back to disk if not found.
 // Returns a dynamically allocated Message* or NULL if not found.
+// Modified retrieve_msg function to show timing and source (cache or disk)
 Message* retrieve_msg(const char* id) {
+    clock_t start_time = clock();  // Start timer
+    
     // First check if the message is in the cache
     Message* cached_msg = cache_lookup(id);
     if (cached_msg) {
-        // Message found in cache, clone it and return
         Message* result = (Message*)malloc(sizeof(Message));
         if (!result) return NULL;
-        
         memcpy(result, cached_msg, sizeof(Message));
+        
+        clock_t end_time = clock();  // End timer for cache retrieval
+        double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+        printf("Retrieved from cache in %f seconds.\n", time_taken);
         return result;
     }
     
@@ -142,6 +147,10 @@ Message* retrieve_msg(const char* id) {
     
     // Add the loaded message to the cache
     cache_insert(msg);
+    
+    clock_t end_time = clock();  // End timer for disk retrieval
+    double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("Retrieved from disk in %f seconds.\n", time_taken);
     
     return msg;
 }

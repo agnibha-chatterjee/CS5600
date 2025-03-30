@@ -209,21 +209,40 @@ int main(int argc, char *argv[]) {
         char uuid1[37];
         char uuid2[37];
         char uuid3[37];
+        char uuid4[37];
+        char uuid5[37];
+
         generate_uuid(uuid1);
         generate_uuid(uuid2);
         generate_uuid(uuid3);
+        generate_uuid(uuid4);
+        generate_uuid(uuid5);
 
         Message* msg1 = create_msg(uuid1, "sender1", "receiver1", "content1");
         Message* msg2 = create_msg(uuid2, "sender2", "receiver2", "content2");
         Message* msg3 = create_msg(uuid3, "sender3", "receiver3", "content3");
-    
+        Message* msg4 = create_msg(uuid4, "sender4", "receiver4", "content4");
+        Message* msg5 = create_msg(uuid5, "sender5", "receiver5", "content5");
+
+        printf("Storing messages...\n");
         store_msg(msg1);
         store_msg(msg2);
         store_msg(msg3);
+        store_msg(msg4);
+        store_msg(msg5);
+
+        printf("Retrieving messages...\n");
+        retrieve_msg(uuid1);
+        retrieve_msg(uuid1);
+        // retrieve_msg(uuid3);
+        // retrieve_msg(uuid4);
+        // retrieve_msg(uuid5);
 
         free(msg1);
         free(msg2);
         free(msg3);
+        free(msg4);
+        free(msg5);
     } else {
         fprintf(stderr, "Unrecognized command: %s\n", argv[1]);
         print_usage();

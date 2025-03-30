@@ -46,7 +46,11 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
         
         Message *msg = create_msg(ids[i], sender, receiver, content);
         store_msg(msg);
+
         free(msg);
+
+        clear_cache();
+
     }
     
     // Reset cache stats before evaluation
@@ -101,7 +105,7 @@ int main(void) {
     evaluate_cache_performance(REPLACEMENT_LRU);
     
     // Test Random strategy
-    // evaluate_cache_performance(REPLACEMENT_RANDOM);
+    evaluate_cache_performance(REPLACEMENT_RANDOM);
     
     return 0;
 } 
