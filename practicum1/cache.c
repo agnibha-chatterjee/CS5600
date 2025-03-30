@@ -19,10 +19,7 @@ static int cache_size = 0;               // Current number of entries
 static int cache_hits = 0;
 static int cache_misses = 0;
 static CacheReplacementStrategy current_strategy = REPLACEMENT_LRU; // Default to LRU
-// Added debugging function prototypes
-static void print_linked_list(void);
-static void print_hash_map(void);
-static void print_cache_state(void);
+
 
 // Initialize the cache
 void init_cache() {
@@ -157,14 +154,12 @@ Message* cache_lookup(const char* id) {
         printf("[CACHE] HIT: Message found in cache\n");
         cache_hits++;
         move_to_front(node);
-        print_cache_state();  // Added: print the current cache state after retrieving
         return &node->msg;
     }
     
     // Cache miss
     printf("[CACHE] MISS: Message not found in cache\n");
     cache_misses++;
-    print_cache_state();  // Added: print the current cache state after a cache miss
     return NULL;
 }
 
@@ -254,7 +249,6 @@ void cache_insert(const Message* msg) {
             memcpy(&map[slot]->msg, msg, sizeof(Message));
             move_to_front(map[slot]);
             printf("[CACHE] Updated existing entry\n");
-            print_cache_state();  // Added: print the current cache state after updating an entry
             return;
         }
         slot = (slot + 1) % CACHE_SIZE;
@@ -299,32 +293,6 @@ void cache_insert(const Message* msg) {
     cache_size++;
     
     printf("[CACHE] Message inserted in cache\n");
-    print_cache_state();  // Added: print the current cache state after insertion
+    
 }
 
-// Added debugging function definitions
-static void print_linked_list(void) {
-    printf("[CACHE] Linked List: ");
-    DoublyLinkedNode* current = head;
-    while (current != NULL) {
-        printf("%s -> ", current->id);
-        current = current->next;
-    }
-    printf("NULL\n");
-}
-
-static void print_hash_map(void) {
-    printf("[CACHE] Hash Map:\n");
-    for (int i = 0; i < CACHE_SIZE; i++) {
-        if (map[i] != NULL) {
-            printf("  Slot %d: %s\n", i, map[i]->id);
-        } else {
-            printf("  Slot %d: empty\n", i);
-        }
-    }
-}
-
-static void print_cache_state(void) {
-    print_linked_list();
-    print_hash_map();
-}

@@ -19,6 +19,7 @@ static void ensure_message_store_exists() {
 
 // Function to evaluate cache performance using NUM_TESTS random message accesses
 void evaluate_cache_performance(CacheReplacementStrategy strategy) {
+    ensure_message_store_exists();
     // Initialize cache with the specified strategy
     init_cache();
     set_cache_strategy(strategy);
@@ -27,7 +28,7 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
     printf("\n---- EVALUATING CACHE WITH %s STRATEGY ----\n", get_cache_strategy_name());
     
     // Ensure message store directory exists
-    ensure_message_store_exists();
+    
     
     // Create some initial messages to work with (more than cache size)
     const int num_messages = CACHE_SIZE + 10;

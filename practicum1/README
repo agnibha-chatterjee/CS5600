@@ -1,5 +1,3 @@
-Let me write a README for your messaging system with cache implementation:
-
 # Hierarchical Memory and Cache System
 
 This project implements a message-oriented data store with a memory hierarchy and caching system that efficiently manages messages between main memory and disk storage.
