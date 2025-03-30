@@ -6,7 +6,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#define NUM_TESTS 10  // Number of random message accesses for evaluation
+#define NUM_TESTS 1000  // Number of random message accesses for evaluation
 
 // Ensure the message store directory exists
 static void ensure_message_store_exists() {
