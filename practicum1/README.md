@@ -1,3 +1,7 @@
+# Team Memebers
+1. Tarun M - m.t@northeastern.edu
+2. Agnibha Chatterjee - chatterjee.ag@northeastern.edu
+
 # Hierarchical Memory and Cache System
 
 This project implements a message-oriented data store with a memory hierarchy and caching system that efficiently manages messages between main memory and disk storage.
