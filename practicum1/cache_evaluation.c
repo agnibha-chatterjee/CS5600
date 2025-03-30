@@ -30,7 +30,7 @@ void evaluate_cache_performance(CacheReplacementStrategy strategy) {
     ensure_message_store_exists();
     
     // Create some initial messages to work with (more than cache size)
-    const int num_messages = CACHE_SIZE + 2;
+    const int num_messages = CACHE_SIZE + 10;
     char **ids = (char **)malloc(num_messages * sizeof(char *));
     
     // Generate and store messages
