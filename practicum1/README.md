@@ -142,6 +142,22 @@ Combining a hash map with a doubly linked list delivers optimal performance and 
 - Efficiently maintains message ordering and implements the LRU algorithm.
 - Scalable and suitable for high-performance caching scenarios.
 
+## Test Analysis
+
+### Initialized with 16 slots
+### CACHE WITH LRU STRATEGY
+CACHE EVALUATION RESULTS (LRU):
+- Number of cache hits per 1000 accesses: 446
+- Number of cache misses per 1000 accesses: 554
+- Cache hit ratio: 0.45
+
+### CACHE WITH RANDOM STRATEGY
+CACHE EVALUATION RESULTS (Random):
+- Number of cache hits per 1000 accesses: 439
+- Number of cache misses per 1000 accesses: 561
+- Cache hit ratio: 0.44
+
+
 
 
 
