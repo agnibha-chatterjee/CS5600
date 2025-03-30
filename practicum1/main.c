@@ -234,10 +234,7 @@ int main(int argc, char *argv[]) {
         printf("Retrieving messages...\n");
         retrieve_msg(uuid1);
         retrieve_msg(uuid1);
-        // retrieve_msg(uuid3);
-        // retrieve_msg(uuid4);
-        // retrieve_msg(uuid5);
-
+       
         free(msg1);
         free(msg2);
         free(msg3);
