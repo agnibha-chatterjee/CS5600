@@ -95,83 +95,138 @@ int main(void)
       close(client_sock);
       continue;
     }
-    if (strcmp(linebuf, "WRITE") != 0) {
+    if (strcmp(linebuf, "WRITE") == 0) {
+      // Read remote path (may be empty)
+      char remote_path[4096] = {0};
+      if (read_line(client_sock, remote_path, sizeof(remote_path)) < 0) {
+        strcpy(server_message, "Failed to read remote path\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // If remote_path is empty, read client path and use it
+      if (remote_path[0] == '\0') {
+        char client_path[4096] = {0};
+        if (read_line(client_sock, client_path, sizeof(client_path)) < 0) {
+          strcpy(server_message, "Failed to read client path\n");
+          send(client_sock, server_message, strlen(server_message), 0);
+          close(client_sock);
+          continue;
+        }
+        strncpy(remote_path, client_path, sizeof(remote_path)-1);
+        remote_path[sizeof(remote_path)-1] = '\0';
+      }
+      // Read file size
+      char sizebuf[64] = {0};
+      if (read_line(client_sock, sizebuf, sizeof(sizebuf)) < 0) {
+        strcpy(server_message, "Failed to read file size\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      long filesize = atol(sizebuf);
+      if (filesize <= 0) {
+        strcpy(server_message, "Invalid file size\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // Prepare full path
+      char fullpath[8192];
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
+      // Create directories as needed
+      char *p = fullpath + strlen(ROOT_DIR) + 1;
+      for (; *p; ++p) {
+        if (*p == '/') {
+          *p = 0;
+          mkdir(fullpath, 0777);
+          *p = '/';
+        }
+      }
+      // Receive file data
+      FILE *fp = fopen(fullpath, "wb");
+      if (!fp) {
+        snprintf(server_message, sizeof(server_message), "Failed to open file for writing: %s\n", strerror(errno));
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      long received = 0;
+      while (received < filesize) {
+        int to_read = (filesize - received) > sizeof(client_message) ? sizeof(client_message) : (filesize - received);
+        n = recv(client_sock, client_message, to_read, 0);
+        if (n <= 0) break;
+        fwrite(client_message, 1, n, fp);
+        received += n;
+      }
+      fclose(fp);
+      if (received == filesize) {
+        strcpy(server_message, "File written successfully\n");
+      } else {
+        snprintf(server_message, sizeof(server_message), "File transfer incomplete (%ld/%ld bytes)\n", received, filesize);
+      }
+      send(client_sock, server_message, strlen(server_message), 0);
+      close(client_sock);
+    } else if (strcmp(linebuf, "GET") == 0) {
+      // Read remote path (may be empty)
+      char remote_path[4096] = {0};
+      if (read_line(client_sock, remote_path, sizeof(remote_path)) < 0) {
+        strcpy(server_message, "Failed to read remote path\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // If remote_path is empty, read client path and use it
+      if (remote_path[0] == '\0') {
+        char client_path[4096] = {0};
+        if (read_line(client_sock, client_path, sizeof(client_path)) < 0) {
+          strcpy(server_message, "Failed to read client path\n");
+          send(client_sock, server_message, strlen(server_message), 0);
+          close(client_sock);
+          continue;
+        }
+        strncpy(remote_path, client_path, sizeof(remote_path)-1);
+        remote_path[sizeof(remote_path)-1] = '\0';
+      }
+      // Prepare full path
+      char fullpath[8192];
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
+      FILE *fp = fopen(fullpath, "rb");
+      if (!fp) {
+        snprintf(server_message, sizeof(server_message), "ERROR: File not found: %s\n", remote_path);
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // Get file size
+      fseek(fp, 0, SEEK_END);
+      long file_size = ftell(fp);
+      fseek(fp, 0, SEEK_SET);
+      // Send file size as a line
+      snprintf(server_message, sizeof(server_message), "%ld\n", file_size);
+      if (send(client_sock, server_message, strlen(server_message), 0) < 0) {
+        fclose(fp);
+        close(client_sock);
+        continue;
+      }
+      // Send file data
+      long sent = 0;
+      while (sent < file_size) {
+        size_t to_read = (file_size - sent) > sizeof(server_message) ? sizeof(server_message) : (file_size - sent);
+        size_t n = fread(server_message, 1, to_read, fp);
+        if (n <= 0) break;
+        if (send(client_sock, server_message, n, 0) < 0) break;
+        sent += n;
+      }
+      fclose(fp);
+      close(client_sock);
+      continue;
+    } else {
       strcpy(server_message, "Unknown command\n");
       send(client_sock, server_message, strlen(server_message), 0);
       close(client_sock);
       continue;
     }
-    // Read remote path (may be empty)
-    char remote_path[4096] = {0};
-    if (read_line(client_sock, remote_path, sizeof(remote_path)) < 0) {
-      strcpy(server_message, "Failed to read remote path\n");
-      send(client_sock, server_message, strlen(server_message), 0);
-      close(client_sock);
-      continue;
-    }
-    // If remote_path is empty, read client path and use it
-    if (remote_path[0] == '\0') {
-      char client_path[4096] = {0};
-      if (read_line(client_sock, client_path, sizeof(client_path)) < 0) {
-        strcpy(server_message, "Failed to read client path\n");
-        send(client_sock, server_message, strlen(server_message), 0);
-        close(client_sock);
-        continue;
-      }
-      strncpy(remote_path, client_path, sizeof(remote_path)-1);
-      remote_path[sizeof(remote_path)-1] = '\0';
-    }
-    // Read file size
-    char sizebuf[64] = {0};
-    if (read_line(client_sock, sizebuf, sizeof(sizebuf)) < 0) {
-      strcpy(server_message, "Failed to read file size\n");
-      send(client_sock, server_message, strlen(server_message), 0);
-      close(client_sock);
-      continue;
-    }
-    long filesize = atol(sizebuf);
-    if (filesize <= 0) {
-      strcpy(server_message, "Invalid file size\n");
-      send(client_sock, server_message, strlen(server_message), 0);
-      close(client_sock);
-      continue;
-    }
-    // Prepare full path
-    char fullpath[8192];
-    snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
-    // Create directories as needed
-    char *p = fullpath + strlen(ROOT_DIR) + 1;
-    for (; *p; ++p) {
-      if (*p == '/') {
-        *p = 0;
-        mkdir(fullpath, 0777);
-        *p = '/';
-      }
-    }
-    // Receive file data
-    FILE *fp = fopen(fullpath, "wb");
-    if (!fp) {
-      snprintf(server_message, sizeof(server_message), "Failed to open file for writing: %s\n", strerror(errno));
-      send(client_sock, server_message, strlen(server_message), 0);
-      close(client_sock);
-      continue;
-    }
-    long received = 0;
-    while (received < filesize) {
-      int to_read = (filesize - received) > sizeof(client_message) ? sizeof(client_message) : (filesize - received);
-      n = recv(client_sock, client_message, to_read, 0);
-      if (n <= 0) break;
-      fwrite(client_message, 1, n, fp);
-      received += n;
-    }
-    fclose(fp);
-    if (received == filesize) {
-      strcpy(server_message, "File written successfully\n");
-    } else {
-      snprintf(server_message, sizeof(server_message), "File transfer incomplete (%ld/%ld bytes)\n", received, filesize);
-    }
-    send(client_sock, server_message, strlen(server_message), 0);
-    close(client_sock);
   }
   close(socket_desc);
   return 0;
