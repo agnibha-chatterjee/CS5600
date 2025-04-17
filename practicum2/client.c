@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 {
   if (argc < 3 || argc > 4) {
     printf("Usage: %s <WRITE|GET> <local/remote-path> [remote/local-path]\n", argv[0]);
+    printf("Usage: %s RM <remote-path>\n", argv[0]);
     return 1;
   }
 
@@ -225,6 +226,56 @@ int main(int argc, char *argv[])
     } else {
       printf("File transfer incomplete (%ld/%ld bytes)\n", received, file_size);
     }
+    close(socket_desc);
+    return 0;
+  } else if (strcmp(argv[1], "RM") == 0) {
+    const char *remote_path = argv[2];
+    // For symmetry, allow a third argument, but only use remote_path for now
+
+    int socket_desc;
+    struct sockaddr_in server_addr;
+    char server_message[4096];
+    memset(server_message,'\0',sizeof(server_message));
+
+    // Create socket:
+    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
+    if(socket_desc < 0){
+      printf("Unable to create socket\n");
+      return -1;
+    }
+    printf("Socket created successfully\n");
+
+    // Set port and IP the same as server-side:
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(2000);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    // Send connection request to server:
+    if(connect(socket_desc, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
+      printf("Unable to connect\n");
+      close(socket_desc);
+      return -1;
+    }
+    printf("Connected with server successfully\n");
+
+    // Send protocol: RM\n<remote-path>\n
+    char header[4096];
+    int header_len = snprintf(header, sizeof(header), "RM\n%s\n", remote_path);
+    if (send(socket_desc, header, header_len, 0) < 0) {
+      printf("Unable to send header\n");
+      close(socket_desc);
+      return -1;
+    }
+
+    // Receive server's response
+    int recv_len = recv(socket_desc, server_message, sizeof(server_message)-1, 0);
+    if(recv_len < 0){
+      printf("Error while receiving server's msg\n");
+      close(socket_desc);
+      return -1;
+    }
+    server_message[recv_len] = '\0';
+    printf("Server's response: %s\n", server_message);
     close(socket_desc);
     return 0;
   } else {

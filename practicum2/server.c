@@ -221,6 +221,28 @@ int main(void)
       fclose(fp);
       close(client_sock);
       continue;
+    } else if (strcmp(linebuf, "RM") == 0) {
+      // Read remote path (must be provided)
+      char remote_path[4096] = {0};
+      if (read_line(client_sock, remote_path, sizeof(remote_path)) < 0) {
+        strcpy(server_message, "Failed to read remote path\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // Prepare full path
+      char fullpath[8192];
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
+      // Try to delete file or directory
+      int status = remove(fullpath);
+      if (status == 0) {
+        snprintf(server_message, sizeof(server_message), "SUCCESS: Deleted %s\n", remote_path);
+      } else {
+        snprintf(server_message, sizeof(server_message), "ERROR: Could not delete %s: %s\n", remote_path, strerror(errno));
+      }
+      send(client_sock, server_message, strlen(server_message), 0);
+      close(client_sock);
+      continue;
     } else {
       strcpy(server_message, "Unknown command\n");
       send(client_sock, server_message, strlen(server_message), 0);
