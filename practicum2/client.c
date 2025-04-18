@@ -16,15 +16,31 @@
 
 int main(int argc, char *argv[])
 {
-  if (argc < 3 || argc > 4) {
-    printf("Usage: %s <WRITE|GET> <local/remote-path> [remote/local-path]\n", argv[0]);
-    printf("Usage: %s RM <remote-path>\n", argv[0]);
+  if (argc < 2) {
+    printf("Usage:\n");
+    printf("  %s WRITE <local-path> [remote-path] <ro|rw>\n", argv[0]);
+    printf("  %s GET <remote-path> [local-path]\n", argv[0]);
+    printf("  %s RM <remote-path>\n", argv[0]);
     return 1;
   }
 
   if (strcmp(argv[1], "WRITE") == 0) {
     const char *local_path = argv[2];
-    const char *remote_path = (argc == 4) ? argv[3] : NULL;
+    const char *remote_path = NULL;
+    const char *permission = NULL;
+    if (argc == 5) {
+      remote_path = argv[3];
+      permission = argv[4];
+    } else if (argc == 4) {
+      permission = argv[3];
+    } else {
+      printf("Usage: %s WRITE <local-path> [remote-path] <ro|rw>\n", argv[0]);
+      return 1;
+    }
+    if (strcmp(permission, "ro") != 0 && strcmp(permission, "rw") != 0) {
+      fprintf(stderr, "Invalid permission: %s (must be ro or rw)\n", permission);
+      return 1;
+    }
 
     // Open local file
     FILE *fp = fopen(local_path, "rb");
@@ -93,8 +109,7 @@ int main(int argc, char *argv[])
     char header[4096];
     int header_len = 0;
     if (remote_path) {
-      // Normal case: remote path provided
-      header_len = snprintf(header, sizeof(header), "WRITE\n%s\n%ld\n", remote_path, file_size);
+      header_len = snprintf(header, sizeof(header), "WRITE\n%s\n%s\n%ld\n", remote_path, permission, file_size);
       if (send(socket_desc, header, header_len, 0) < 0) {
         printf("Unable to send header\n");
         close(socket_desc);
@@ -102,8 +117,7 @@ int main(int argc, char *argv[])
         return -1;
       }
     } else {
-      // Remote path missing: send empty line, then local path
-      header_len = snprintf(header, sizeof(header), "WRITE\n\n%s\n%ld\n", local_path, file_size);
+      header_len = snprintf(header, sizeof(header), "WRITE\n\n%s\n%s\n%ld\n", local_path, permission, file_size);
       if (send(socket_desc, header, header_len, 0) < 0) {
         printf("Unable to send header\n");
         close(socket_desc);

@@ -116,6 +116,20 @@ int main(void)
         strncpy(remote_path, client_path, sizeof(remote_path)-1);
         remote_path[sizeof(remote_path)-1] = '\0';
       }
+      // Read permission flag (ro or rw)
+      char perm_buf[16] = {0};
+      if (read_line(client_sock, perm_buf, sizeof(perm_buf)) < 0) {
+        strcpy(server_message, "Failed to read permission\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      if (strcmp(perm_buf, "ro") != 0 && strcmp(perm_buf, "rw") != 0) {
+        strcpy(server_message, "Invalid permission\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
       // Read file size
       char sizebuf[64] = {0};
       if (read_line(client_sock, sizebuf, sizeof(sizebuf)) < 0) {
@@ -143,6 +157,16 @@ int main(void)
           *p = '/';
         }
       }
+      // Check existing permissions
+      struct stat st;
+      int existed = (stat(fullpath, &st) == 0);
+      if (existed && !(st.st_mode & S_IWUSR)) {
+        snprintf(server_message, sizeof(server_message), "ERROR: Permission denied: %s is read-only\n", remote_path);
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      int is_new = !existed;
       // Receive file data
       FILE *fp = fopen(fullpath, "wb");
       if (!fp) {
@@ -161,6 +185,11 @@ int main(void)
       }
       fclose(fp);
       if (received == filesize) {
+        // Set permissions on new file
+        if (is_new) {
+          if (strcmp(perm_buf, "ro") == 0) chmod(fullpath, 0444);
+          else chmod(fullpath, 0666);
+        }
         strcpy(server_message, "File written successfully\n");
       } else {
         snprintf(server_message, sizeof(server_message), "File transfer incomplete (%ld/%ld bytes)\n", received, filesize);
@@ -233,6 +262,16 @@ int main(void)
       // Prepare full path
       char fullpath[8192];
       snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
+      // Check permissions before delete: block if file is read-only
+      struct stat st_rm;
+      if (stat(fullpath, &st_rm) == 0 && !(st_rm.st_mode & S_IWUSR)) {
+        snprintf(server_message, sizeof(server_message),
+                 "ERROR: Permission denied: %s is read-only\n",
+                 remote_path);
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
       // Try to delete file or directory
       int status = remove(fullpath);
       if (status == 0) {

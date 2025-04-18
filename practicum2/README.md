@@ -7,6 +7,7 @@ This project implements a simple remote file system using a TCP client-server mo
 - **WRITE**: Upload a file from the client to the server.
 - **GET**: Download a file from the server to the client.
 - **RM**: Delete a file or folder on the server.
+- **Permissions**: When creating a file via `WRITE`, specify `ro` (read-only) or `rw` (read-write).
 
 ## Directory Structure
 
@@ -36,13 +37,14 @@ The client supports three commands: `WRITE`, `GET`, and `RM`.
 ### WRITE (Upload a file)
 
 ```
-./client WRITE <local-file-path> [remote-file-path]
+./client WRITE <local-file-path> [remote-file-path] <ro|rw>
 ```
 
 - If `remote-file-path` is omitted, the file will be saved on the server with the same name as the local file.
+- `<ro|rw>` sets the initial permission: `ro` for read-only; `rw` for read-write.
 - Example:
-  - `./client WRITE data/foo.txt folder/bar.txt` (uploads `data/foo.txt` to `server_root/folder/bar.txt`)
-  - `./client WRITE foo.txt` (uploads `foo.txt` to `server_root/foo.txt`)
+  - `./client WRITE data/foo.txt folder/bar.txt rw` (uploads `data/foo.txt` to `server_root/folder/bar.txt` with read-write permission)
+  - `./client WRITE foo.txt ro` (uploads `foo.txt` to `server_root/foo.txt` with read-only permission)
 
 ### GET (Download a file)
 
@@ -70,6 +72,7 @@ The client supports three commands: `WRITE`, `GET`, and `RM`.
 - All file paths for the server are relative to the `server_root` directory.
 - The server will create directories as needed for uploads.
 - The `RM` command uses the standard C `remove()` function, so it will only delete empty directories or files.
+- Permissions are set at initial upload and enforced by the server; read-only files cannot be modified or deleted.
 
 ## Authors
 
