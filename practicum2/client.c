@@ -2,7 +2,7 @@
  * client.c -- TCP Socket Client
  * CS5600 / Practicum 2
  * Agnibha Chatterjee
- * Tarun Mohan 
+ * Tarun M 
  */
 
 #include <stdio.h>
@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     printf("  %s WRITE <local-path> [remote-path] <ro|rw>\n", argv[0]);
     printf("  %s GET <remote-path> [local-path]\n", argv[0]);
     printf("  %s RM <remote-path>\n", argv[0]);
+    printf("  %s LS [remote-path]\n", argv[0]);
     return 1;
   }
 
@@ -290,6 +291,54 @@ int main(int argc, char *argv[])
     }
     server_message[recv_len] = '\0';
     printf("Server's response: %s\n", server_message);
+    close(socket_desc);
+    return 0;
+  } else if (strcmp(argv[1], "LS") == 0) {
+    const char *remote_path = (argc == 3) ? argv[2] : "";
+
+    int socket_desc;
+    struct sockaddr_in server_addr;
+    char recv_buf[8192];
+
+    // Create socket
+    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_desc < 0) {
+      printf("Unable to create socket\n");
+      return -1;
+    }
+    printf("Socket created successfully\n");
+
+    // Set server address
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(2000);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    // Connect to server
+    if (connect(socket_desc, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+      printf("Unable to connect\n");
+      close(socket_desc);
+      return -1;
+    }
+    printf("Connected with server successfully\n");
+
+    // Send LS command
+    char header[4096];
+    int header_len = snprintf(header, sizeof(header), "LS\n%s\n", remote_path);
+    if (send(socket_desc, header, header_len, 0) < 0) {
+      printf("Unable to send header\n");
+      close(socket_desc);
+      return -1;
+    }
+
+    // Receive and print server response
+    int n;
+    while ((n = recv(socket_desc, recv_buf, sizeof(recv_buf)-1, 0)) > 0) {
+      recv_buf[n] = '\0';
+      printf("%s", recv_buf);
+    }
+    if (n < 0) {
+      printf("Error while receiving server's msg\n");
+    }
     close(socket_desc);
     return 0;
   } else {

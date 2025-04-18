@@ -7,6 +7,7 @@ This project implements a simple remote file system using a TCP client-server mo
 - **WRITE**: Upload a file from the client to the server.
 - **GET**: Download a file from the server to the client.
 - **RM**: Delete a file or folder on the server.
+- **LS**: List files and directories on the server with permissions in symbolic form.
 - **Permissions**: When creating a file via `WRITE`, specify `ro` (read-only) or `rw` (read-write).
 
 ## Directory Structure
@@ -32,7 +33,7 @@ Start the server (it will keep running and handle multiple client requests):
 
 ## Running the Client
 
-The client supports three commands: `WRITE`, `GET`, and `RM`.
+The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 
 ### WRITE (Upload a file)
 
@@ -66,6 +67,21 @@ The client supports three commands: `WRITE`, `GET`, and `RM`.
 - Example:
   - `./client RM folder/bar.txt` (deletes `server_root/folder/bar.txt`)
 
+### LS (List files and directories)
+
+```
+./client LS [remote-path]
+```
+
+- If `[remote-path]` is omitted, lists the contents of the root directory `server_root`.
+- If `remote-path` is a directory, lists its contents.
+- If `remote-path` is a file, shows that file and its permissions.
+- Format: `<permissions> <name>` where `<permissions>` is in symbolic form (e.g. `drwxr-xr-x` or `-rw-r--r--`).
+- Example:
+  - `./client LS` (lists `server_root`)
+  - `./client LS data` (lists `server_root/data`)
+  - `./client LS data/foo.txt` (shows `data/foo.txt` permissions)
+
 ## Notes
 
 - The server must be running before you use the client.
@@ -77,4 +93,4 @@ The client supports three commands: `WRITE`, `GET`, and `RM`.
 ## Authors
 
 - Agnibha Chatterjee
-- Tarun Mohan
+- Tarun M

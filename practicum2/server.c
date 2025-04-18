@@ -2,7 +2,7 @@
  * server.c -- TCP Socket Server
  * CS5600 / Practicum 2
  * Agnibha Chatterjee
- * Tarun Mohan 
+ * Tarun M
  */
 
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #define ROOT_DIR "server_root"
 
 // Helper to read a line from a socket
@@ -27,6 +28,21 @@ int read_line(int sock, char *buf, int maxlen) {
   }
   buf[i] = '\0';
   return i;
+}
+
+// Add helper to convert mode bits to symbolic string
+void mode_to_str(mode_t m, char *s) {
+  s[0] = S_ISDIR(m) ? 'd' : '-';
+  s[1] = (m & S_IRUSR) ? 'r' : '-';
+  s[2] = (m & S_IWUSR) ? 'w' : '-';
+  s[3] = (m & S_IXUSR) ? 'x' : '-';
+  s[4] = (m & S_IRGRP) ? 'r' : '-';
+  s[5] = (m & S_IWGRP) ? 'w' : '-';
+  s[6] = (m & S_IXGRP) ? 'x' : '-';
+  s[7] = (m & S_IROTH) ? 'r' : '-';
+  s[8] = (m & S_IWOTH) ? 'w' : '-';
+  s[9] = (m & S_IXOTH) ? 'x' : '-';
+  s[10] = '\0';
 }
 
 int main(void)
@@ -248,6 +264,52 @@ int main(void)
         sent += n;
       }
       fclose(fp);
+      close(client_sock);
+      continue;
+    } else if (strcmp(linebuf, "LS") == 0) {
+      // Read remote path (may be empty)
+      char remote_path[4096] = {0};
+      if (read_line(client_sock, remote_path, sizeof(remote_path)) < 0) {
+        strcpy(server_message, "Failed to read remote path\n");
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      // Determine full path
+      char fullpath[8192];
+      if (remote_path[0] == '\0') {
+        snprintf(fullpath, sizeof(fullpath), "%s", ROOT_DIR);
+      } else {
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", ROOT_DIR, remote_path);
+      }
+      struct stat st;
+      if (stat(fullpath, &st) < 0) {
+        snprintf(server_message, sizeof(server_message), "ERROR: Not found: %s\n", remote_path);
+        send(client_sock, server_message, strlen(server_message), 0);
+        close(client_sock);
+        continue;
+      }
+      char perms[11];
+      if (S_ISDIR(st.st_mode)) {
+        DIR *d = opendir(fullpath);
+        struct dirent *entry;
+        while ((entry = readdir(d)) != NULL) {
+          if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+          char itempath[8192];
+          snprintf(itempath, sizeof(itempath), "%s/%s", fullpath, entry->d_name);
+          struct stat st2;
+          if (stat(itempath, &st2) == 0) {
+            mode_to_str(st2.st_mode, perms);
+            snprintf(server_message, sizeof(server_message), "%s  %s\n", perms, entry->d_name);
+            send(client_sock, server_message, strlen(server_message), 0);
+          }
+        }
+        closedir(d);
+      } else {
+        mode_to_str(st.st_mode, perms);
+        snprintf(server_message, sizeof(server_message), "%s  %s\n", perms, remote_path);
+        send(client_sock, server_message, strlen(server_message), 0);
+      }
       close(client_sock);
       continue;
     } else if (strcmp(linebuf, "RM") == 0) {
