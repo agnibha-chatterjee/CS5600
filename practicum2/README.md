@@ -81,7 +81,7 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 - If `[remote-path]` is omitted, lists the contents of the root directory `server_root`.
 - If `remote-path` is a directory, lists its contents.
 - If `remote-path` is a file, shows that file and its permissions.
-- Format: `<permissions> <name>` where `<permissions>` is in symbolic form (e.g. `drwxr-xr-x` or `-rw-r--r--`).
+- Format: `<permissions> <name>` where `<permissions>` is in symbolic form (e.g. `drwxr-xr-x` or `-rw-r--r--`) [we piggy back of the OS here]
 - Example:
   - `./client LS` (lists `server_root`)
   - `./client LS sample` (lists `server_root/sample`)
