@@ -2,6 +2,11 @@
 
 This project implements a simple remote file system using a TCP client-server model in C. The server provides file storage and management services, and the client can connect to the server to write, read, or delete files remotely.
 
+## Authors
+
+- Agnibha Chatterjee
+- Tarun M
+
 ## Features
 
 - **WRITE**: Upload a file from the client to the server.
@@ -44,8 +49,8 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 - If `remote-file-path` is omitted, the file will be saved on the server with the same name as the local file.
 - `<ro|rw>` sets the initial permission: `ro` for read-only; `rw` for read-write.
 - Example:
-  - `./client WRITE data/foo.txt folder/bar.txt rw` (uploads `data/foo.txt` to `server_root/folder/bar.txt` with read-write permission)
-  - `./client WRITE foo.txt ro` (uploads `foo.txt` to `server_root/foo.txt` with read-only permission)
+  - `./client WRITE sample/a.txt documents/b.txt rw` (uploads `sample/a.txt` to `server_root/documents/b.txt` with read-write permission)
+  - `./client WRITE c.txt ro` (uploads `c.txt` to `server_root/c.txt` with read-only permission)
 
 ### GET (Download a file)
 
@@ -55,8 +60,8 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 
 - If `local-file-path` is omitted, the file will be saved locally with the same name as the remote file.
 - Example:
-  - `./client GET folder/bar.txt mycopy.txt` (downloads `server_root/folder/bar.txt` to `mycopy.txt`)
-  - `./client GET folder/bar.txt` (downloads `server_root/folder/bar.txt` to `bar.txt`)
+  - `./client GET documents/b.txt local_copy.txt` (downloads `server_root/documents/b.txt` to `local_copy.txt`)
+  - `./client GET documents/b.txt` (downloads `server_root/documents/b.txt` to `b.txt`)
 
 ### RM (Delete a file or folder)
 
@@ -65,7 +70,7 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 ```
 
 - Example:
-  - `./client RM folder/bar.txt` (deletes `server_root/folder/bar.txt`)
+  - `./client RM documents/b.txt` (deletes `server_root/documents/b.txt`)
 
 ### LS (List files and directories)
 
@@ -79,8 +84,8 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 - Format: `<permissions> <name>` where `<permissions>` is in symbolic form (e.g. `drwxr-xr-x` or `-rw-r--r--`).
 - Example:
   - `./client LS` (lists `server_root`)
-  - `./client LS data` (lists `server_root/data`)
-  - `./client LS data/foo.txt` (shows `data/foo.txt` permissions)
+  - `./client LS sample` (lists `server_root/sample`)
+  - `./client LS sample/a.txt` (shows `sample/a.txt` permissions)
 
 ## Notes
 
@@ -89,8 +94,3 @@ The client supports four commands: `WRITE`, `GET`, `RM`, and `LS`.
 - The server will create directories as needed for uploads.
 - The `RM` command uses the standard C `remove()` function, so it will only delete empty directories or files.
 - Permissions are set at initial upload and enforced by the server; read-only files cannot be modified or deleted.
-
-## Authors
-
-- Agnibha Chatterjee
-- Tarun M
